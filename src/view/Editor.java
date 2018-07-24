@@ -2,23 +2,32 @@ package view;
 
 import javax.swing.*;
 
-import controller.FileChooser;
-import model.Cryptography;
-import model.PBCryptography;
+import controller.DecListener;
+import controller.EncListener;
+import model.EncodedFile;
 
 import java.awt.GridLayout;
 import java.awt.event.*;
-import java.io.*;
 
+/**
+ * Die Klasse Editor, Präsentationsschicht und User-Schnittstelle.
+ * 
+ * @author Stefan Böhling
+ */
 public class Editor {
 
-	JTextArea textArea = new JTextArea();
-	JFrame ste = new JFrame("Secure Text Editor");
-	JDialog dialog;
-	Cryptography crypto = new Cryptography();
-	String encrypted = "";
-	String decrypted = "";
+	/** The text area. */
+	private JTextArea textArea = new JTextArea();
 
+	/** The ste. */
+	private JFrame ste = new JFrame("Secure Text Editor");
+
+	/** The dialog. */
+	private JDialog dialog;
+
+	/**
+	 * Inits the frame.
+	 */
 	public void initFrame() {
 		ste.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		ste.setResizable(true);
@@ -34,6 +43,9 @@ public class Editor {
 
 	}
 
+	/**
+	 * Adds the buttons.
+	 */
 	public void addButtons() {
 		JButton open = new JButton("Open");
 		open.addActionListener(new OpenL());
@@ -48,7 +60,17 @@ public class Editor {
 		save.setSize(70, 30);
 	}
 
+	/**
+	 * The Class OpenL.
+	 */
 	class OpenL implements ActionListener {
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.
+		 * ActionEvent)
+		 */
 		public void actionPerformed(ActionEvent e) {
 			dialog = new JDialog();
 			dialog.setTitle("Encryption");
@@ -56,132 +78,163 @@ public class Editor {
 			dialog.setModal(true);
 			dialog.setResizable(false);
 			dialog.setLayout(new GridLayout(1, 5));
-			// decrypt
 
-			String[] encModeList = {"", "AES", "DES", "PBEWithSHAAnd128BitAES-CBC-BC", "PBEWithMD5AndDES", "PBEWithSHAAnd40BitRC4"};
-			JComboBox encMode = new JComboBox(encModeList);
-			
-			String[] cipherModeList = {"", "ECB", "CBC", "CTS", "CTR", "OFB", "CFB", "GCM"};
-			JComboBox cipherMode = new JComboBox(cipherModeList);
-			
-			String[] paddingList = {"", "PKCS7Padding", "NoPadding", "ZeroBytePadding"};
-			JComboBox padding = new JComboBox(paddingList);
-			
-			JTextField pw = new JTextField("Passwort");
-			dialog.add(encMode, 0);
-			dialog.add(cipherMode, 1);
-			dialog.add(padding, 2);
+			JTextField pw = new JTextField("");
 			dialog.add(pw);
 
 			JButton go = new JButton("Go!");
 			dialog.add(go);
 
-			class DecL implements ActionListener {
-				public void actionPerformed(ActionEvent e) {
-					String encryption = encMode.getSelectedItem().toString();
-					String cipherM = cipherMode.getSelectedItem().toString();
-					String pad = padding.getSelectedItem().toString();
-
-					if (encMode.getSelectedItem() == null && cipherMode.getSelectedItem() == null && padding.getSelectedItem() == null) {
-						FileChooser f = new FileChooser();
-						textArea.setText(f.open());
-					} else {
-						try {
-							if(encryption.equals("AES")){
-								Cryptography c = new Cryptography();
-								FileChooser f = new FileChooser();
-								textArea.setText(c.decryptAES(f.open(), cipherM, pad));
-							}
-							else if(encryption.equals("DES")){
-								Cryptography c = new Cryptography();
-								FileChooser f = new FileChooser();
-								textArea.setText(c.decryptDES(f.open(), cipherM, pad));
-							}
-							else if(encryption.equals("PBEWithSHAAnd128BitAES-CBC-BC")){
-								PBCryptography c = new PBCryptography();
-								FileChooser f = new FileChooser();
-								textArea.setText(c.decodePBEWithSHAAnd128BitAES_CBC_BC(f.open(), pw.getText().toCharArray()));
-							}
-						} catch (Exception e1) {
-							e1.printStackTrace();
-						}
-					}
-
-					dialog.dispose();
-				}
-			}
-
-			go.addActionListener(new DecL());
+			go.addActionListener(new DecListener(dialog, textArea, pw.getText()));
 
 			dialog.setVisible(true);
 
 		}
 	}
 
+	/**
+	 * The Class SaveL.
+	 */
 	class SaveL implements ActionListener {
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.
+		 * ActionEvent)
+		 */
 		public void actionPerformed(ActionEvent e) {
 			dialog = new JDialog();
 			dialog.setTitle("Encryption");
-			dialog.setSize(600, 50);
+			dialog.setSize(800, 70);
 			dialog.setModal(true);
 			dialog.setResizable(false);
-			dialog.setLayout(new GridLayout(1, 5));
+			dialog.setLayout(new GridLayout(1, 6));
 			// encrypt
 			JPanel encryptPanel = new JPanel();
 			JLabel encrypt = new JLabel("Encrypt with:");
 			encryptPanel.add(encrypt);
-			
-			String[] encModeList = {"", "AES", "DES", "PBEWithSHAAnd128BitAES-CBC-BC", "PBEWithMD5AndDES", "PBEWithSHAAnd40BitRC4"};
-			JComboBox encMode = new JComboBox(encModeList);
-			
-			String[] cipherModeList = {"", "ECB", "CBC", "CTS", "CTR", "OFB", "CFB", "GCM"};
-			JComboBox cipherMode = new JComboBox(cipherModeList);
-			
-			String[] paddingList = {"", "PKCS7Padding", "NoPadding", "ZeroBytePadding"};
-			JComboBox padding = new JComboBox(paddingList);
-			
-			JTextField pw = new JTextField("Passwort");
-			dialog.add(encMode, 0);
-			dialog.add(cipherMode, 1);
-			dialog.add(padding, 2);
-			dialog.add(pw);
-			
-			JButton go = new JButton("Go!");
-			dialog.add(go);
 
-			class EncL implements ActionListener {
+			EncodedFile file = new EncodedFile();
+
+			String[] cipherList = { "", "AES", "DES", "PBEWithSHAAnd128BitAES-CBC-BC", "PBEWithMD5AndDES",
+					"PBEWithSHAAnd40BitRC4" };
+			String[] keyLengthList = { "" };
+			String[] cipherModeList = { "" };
+			String[] paddingList = { "" };
+			String[] hashingList = { "", "MD5", "SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512" };
+
+			JComboBox<String> cipher = new JComboBox<String>(cipherList);
+			JComboBox<String> keyLength = new JComboBox<String>(keyLengthList);
+			JComboBox<String> cipherMode = new JComboBox<String>(cipherModeList);
+			JComboBox<String> padding = new JComboBox<String>(paddingList);
+			JComboBox<String> hashing = new JComboBox<String>(hashingList);
+			JTextField pw = new JTextField("");
+
+			class cipherListener implements ActionListener {
 				public void actionPerformed(ActionEvent e) {
-					String encryption = encMode.getSelectedItem().toString();
-					String cipherM = cipherMode.getSelectedItem().toString();
-					String pad = padding.getSelectedItem().toString();
-					
-					if (encMode.getSelectedItem() == null && cipherMode.getSelectedItem() == null && padding.getSelectedItem() == null) {
-						encrypted = textArea.getText();
-					} else {
-						try {
-							if(encryption.equals("AES")){
-								Cryptography c = new Cryptography();
-								encrypted = c.encryptAES(textArea.getText(), cipherM, pad);
-							}else if(encryption.equals("DES")){
-								Cryptography c = new Cryptography();
-								encrypted = c.encryptDES(textArea.getText(), cipherM, pad);
-							}else if(encryption.equals("PBEWithSHAAnd128BitAES-CBC-BC")){
-								PBCryptography c = new PBCryptography();
-								encrypted = c.encodePBEWithSHAAnd128BitAES_CBC_BC(textArea.getText(), pw.getText().toCharArray());
-							}
-								
-						} catch (Exception e1) {
-							e1.printStackTrace();
-						}
-					}
+					String choice = cipher.getSelectedItem().toString();
+					file.setCipher(choice);
+					if (choice.equals("AES")) {
+						pw.setVisible(false);
+						keyLength.addItem("128");
+						keyLength.addItem("192");
+						keyLength.addItem("256");
 
-					FileChooser f = new FileChooser();
-					f.save(encrypted);
-					dialog.dispose();
+						cipherMode.addItem("ECB");
+						cipherMode.addItem("CBC");
+						cipherMode.addItem("CTS");
+						cipherMode.addItem("CTR");
+						cipherMode.addItem("OFB");
+						cipherMode.addItem("CFB");
+						cipherMode.addItem("GCM");
+					} else if (choice.equals("DES")) {
+						pw.setVisible(false);
+						cipherMode.addItem("ECB");
+						cipherMode.addItem("CBC");
+						cipherMode.addItem("CTS");
+						cipherMode.addItem("CTR");
+						cipherMode.addItem("OFB");
+						cipherMode.addItem("CFB");
+						cipherMode.addItem("GCM");
+						keyLength.removeItem("128");
+						keyLength.removeItem("192");
+						keyLength.removeItem("256");
+					} else {
+						pw.setVisible(true);
+						keyLength.removeItem("128");
+						keyLength.removeItem("192");
+						keyLength.removeItem("256");
+						cipherMode.removeItem("ECB");
+						cipherMode.removeItem("CBC");
+						cipherMode.removeItem("CTS");
+						cipherMode.removeItem("CTR");
+						cipherMode.removeItem("OFB");
+						cipherMode.removeItem("CFB");
+						cipherMode.removeItem("GCM");
+						padding.removeItem("PKCS7Padding");
+						padding.removeItem("NoPadding");
+						padding.removeItem("ZeroBytePadding");
+					}
+				}
+			}
+			class keyLengthListener implements ActionListener {
+				public void actionPerformed(ActionEvent e) {
+					String keyLString = keyLength.getSelectedItem().toString();
+					if (!keyLString.equals("")) {
+						file.setKeyLength(Integer.parseInt(keyLString));
+					}
+				}
+			}
+			class cipherModeListener implements ActionListener {
+				public void actionPerformed(ActionEvent e) {
+					String choice = cipherMode.getSelectedItem().toString();
+					file.setBlockMode(cipherMode.getSelectedItem().toString());
+					if (choice.equals("GCM")) {
+						padding.removeItem("PKCS7Padding");
+						padding.removeItem("NoPadding");
+						padding.removeItem("ZeroBytePadding");
+
+					} else if (!choice.isEmpty()) {
+						padding.addItem("PKCS7Padding");
+						padding.addItem("NoPadding");
+						padding.addItem("ZeroBytePadding");
+					} else {
+						padding.removeItem("PKCS7Padding");
+						padding.removeItem("NoPadding");
+						padding.removeItem("ZeroBytePadding");
+					}
+				}
+			}
+			class paddingListener implements ActionListener {
+				public void actionPerformed(ActionEvent e) {
+					file.setPadding(padding.getSelectedItem().toString());
+				}
+			}
+			class hashingListener implements ActionListener {
+				public void actionPerformed(ActionEvent e) {
+					file.setHashMode(hashing.getSelectedItem().toString());
 				}
 			}
 
-			go.addActionListener(new EncL());
+			cipher.addActionListener(new cipherListener());
+			keyLength.addActionListener(new keyLengthListener());
+			cipherMode.addActionListener(new cipherModeListener());
+			padding.addActionListener(new paddingListener());
+			hashing.addActionListener(new hashingListener());
+
+			dialog.add(cipher, 0);
+			dialog.add(keyLength, 1);
+			dialog.add(cipherMode, 2);
+			dialog.add(padding, 3);
+			dialog.add(hashing, 4);
+			dialog.add(pw, 5);
+			pw.setVisible(false);
+
+			JButton go = new JButton("Go!");
+			dialog.add(go);
+
+			go.addActionListener(new EncListener(dialog, textArea, file, pw.getText()));
 
 			dialog.setVisible(true);
 

@@ -1,47 +1,101 @@
 package controller;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
 import java.io.*;
 import javax.swing.*;
 
+import model.EncodedFile;
+import model.Secret;
+
+/**
+ * Die Klasse FileChooser, auf dem JFileChooser aufbauend. Speichert Dateien
+ * (EncodedFile) und Keys (Secret) mithilfe von XMLEncoder und öffnet diese
+ * wieder als Objekte mithilfe von XMLDecoder.
+ * @author Stefan Böhling
+ */
 public class FileChooser {
-	
-	public JFileChooser chooser = new JFileChooser();
-	
-	public void save(String data){
+
+	/** The chooser. */
+	private JFileChooser chooser = new JFileChooser();
+
+	/**
+	 * Save.
+	 *
+	 * @param file
+	 *            the file
+	 * @param secret
+	 *            the secret
+	 */
+	public void save(EncodedFile file, Secret secret) {
+		XMLEncoder encoder = null;
 		int returnValue = chooser.showSaveDialog(null);
-		
-		if(returnValue == JFileChooser.APPROVE_OPTION){
-			try{
-				BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(chooser.getSelectedFile()), "utf-8"));
-				writer.write(data);
-				writer.close();
-			} catch (IOException e){
-				System.out.println("IO Exception, Fehler beim Speichern");
-				e.printStackTrace();
+		if (returnValue == JFileChooser.APPROVE_OPTION) {
+			try {
+				encoder = new XMLEncoder(new BufferedOutputStream(new FileOutputStream(chooser.getSelectedFile())));
+			} catch (FileNotFoundException e) {
+				System.out.println("No File Selected");
 			}
+			encoder.writeObject(file);
+			encoder.close();
+		}
+		if (returnValue == JFileChooser.APPROVE_OPTION && !file.getCipher().contains("PBE")) {
+			try {
+				encoder = new XMLEncoder(
+						new BufferedOutputStream(new FileOutputStream(chooser.getSelectedFile() + "key")));
+			} catch (FileNotFoundException e) {
+				System.out.println("No File Selected");
+			}
+			System.out.println(secret.getKey());
+			System.out.println(secret.getKey().getEncoded());
+			encoder.writeObject(secret);
+			encoder.close();
 		}
 	}
-	
-	public String open(){
+
+	/**
+	 * Open file.
+	 *
+	 * @return the encoded file
+	 */
+	public EncodedFile openFile() {
+
 		int returnValue = chooser.showOpenDialog(null);
-		String data = "";
-		String lineFeed = System.getProperty("line.separator");
-		
-		if(returnValue == JFileChooser.APPROVE_OPTION){
-			try{
-				BufferedReader reader = new BufferedReader(new FileReader(chooser.getSelectedFile()));
-				data = reader.readLine();
-				while(reader.read() != -1){
-					data = data + lineFeed + reader.readLine();
-				}
-				reader.close();
-			} catch (IOException e){
-				System.out.println("IO Exception, Fehler beim Laden");
-				e.printStackTrace();
+		XMLDecoder decoder = null;
+		EncodedFile file = null;
+
+		if (returnValue == JFileChooser.APPROVE_OPTION) {
+			try {
+				decoder = new XMLDecoder(new BufferedInputStream(new FileInputStream(chooser.getSelectedFile())));
+			} catch (FileNotFoundException e) {
+				System.out.println("file not found");
 			}
+			file = (EncodedFile) decoder.readObject();
 		}
-		
-		return data;
+
+		return file;
+	}
+
+	/**
+	 * Open secret.
+	 *
+	 * @return the secret
+	 */
+	public Secret openSecret() {
+		int returnValue = chooser.showOpenDialog(null);
+		XMLDecoder decoder = null;
+		Secret secret = null;
+
+		if (returnValue == JFileChooser.APPROVE_OPTION) {
+			try {
+				decoder = new XMLDecoder(new BufferedInputStream(new FileInputStream(chooser.getSelectedFile())));
+			} catch (FileNotFoundException e) {
+				System.out.println("file not found");
+			}
+			secret = (Secret) decoder.readObject();
+		}
+
+		return secret;
 	}
 
 }
