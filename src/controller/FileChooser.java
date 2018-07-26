@@ -46,8 +46,6 @@ public class FileChooser {
 			} catch (FileNotFoundException e) {
 				System.out.println("No File Selected");
 			}
-			System.out.println(secret.getKey());
-			System.out.println(secret.getKey().getEncoded());
 			encoder.writeObject(secret);
 			encoder.close();
 		}

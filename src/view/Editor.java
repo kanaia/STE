@@ -130,6 +130,7 @@ public class Editor {
 			JComboBox<String> padding = new JComboBox<String>(paddingList);
 			JComboBox<String> hashing = new JComboBox<String>(hashingList);
 			JTextField pw = new JTextField("");
+			JButton go = new JButton("Go!");
 
 			class cipherListener implements ActionListener {
 				public void actionPerformed(ActionEvent e) {
@@ -175,6 +176,7 @@ public class Editor {
 						padding.removeItem("PKCS7Padding");
 						padding.removeItem("NoPadding");
 						padding.removeItem("ZeroBytePadding");
+						go.addActionListener(new EncListener(dialog, textArea, file, pw.getText()));
 					}
 				}
 			}
@@ -209,11 +211,13 @@ public class Editor {
 			class paddingListener implements ActionListener {
 				public void actionPerformed(ActionEvent e) {
 					file.setPadding(padding.getSelectedItem().toString());
+					go.addActionListener(new EncListener(dialog, textArea, file, pw.getText()));
 				}
 			}
 			class hashingListener implements ActionListener {
 				public void actionPerformed(ActionEvent e) {
 					file.setHashMode(hashing.getSelectedItem().toString());
+					go.addActionListener(new EncListener(dialog, textArea, file, pw.getText()));
 				}
 			}
 
@@ -230,11 +234,9 @@ public class Editor {
 			dialog.add(hashing, 4);
 			dialog.add(pw, 5);
 			pw.setVisible(false);
-
-			JButton go = new JButton("Go!");
 			dialog.add(go);
 
-			go.addActionListener(new EncListener(dialog, textArea, file, pw.getText()));
+
 
 			dialog.setVisible(true);
 
