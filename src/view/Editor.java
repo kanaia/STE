@@ -38,6 +38,7 @@ public class Editor {
 		ste.add(textArea);
 		textArea.setLocation(0, 30);
 		textArea.setSize(600, 370);
+		textArea.setLineWrap(true);
 
 		addButtons();
 

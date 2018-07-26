@@ -19,6 +19,7 @@ import javax.crypto.spec.IvParameterSpec;
 /**
  * Die Klasse Cryptography, ein Kryptographie-Element welches in AES und DES
  * ver- und entschlüsseln kann.
+ * 
  * @author Stefan Böhling
  */
 public class Cryptography {
@@ -44,7 +45,12 @@ public class Cryptography {
 	 * @throws IllegalBlockSizeException
 	 */
 	public String encryptAES(String s, EncodedFile file) throws Exception {
-		String ciphermethod = "AES/" + file.getBlockMode() + "/" + file.getPadding();
+		String ciphermethod = "";
+		if (file.getPadding() != null) {
+			ciphermethod = "AES/" + file.getBlockMode() + "/" + file.getPadding();
+		}else{
+			ciphermethod = "AES/" + file.getBlockMode() + "/NoPadding";
+		}
 		Hashing hash = new Hashing();
 		secret = new Secret("AES", file.getKeyLength());
 		byte[] input = s.getBytes(StandardCharsets.US_ASCII);
@@ -89,7 +95,13 @@ public class Cryptography {
 	 * @throws IllegalBlockSizeException
 	 */
 	public String decryptAES(EncodedFile file, Secret decSecret) throws Exception {
-		String ciphermethod = "AES/" + file.getBlockMode() + "/" + file.getPadding();
+		String ciphermethod = "";
+		if (file.getPadding() != null) {
+			ciphermethod = "AES/" + file.getBlockMode() + "/" + file.getPadding();
+		}else{
+			ciphermethod = "AES/" + file.getBlockMode() + "/NoPadding";
+		}
+
 		Hashing hash = new Hashing();
 		if (file.getHashMode() != null
 				&& hash.validateHash(file.getHashMode(), file.getCipherText(), file.getHashValue())) {
@@ -135,7 +147,12 @@ public class Cryptography {
 	 * @throws IllegalBlockSizeException
 	 */
 	public String encryptDES(String s, EncodedFile file) throws Exception {
-		String ciphermethod = "DES/" + file.getBlockMode() + "/" + file.getPadding();
+		String ciphermethod = "";
+		if (file.getPadding() != null) {
+			ciphermethod = "AES/" + file.getBlockMode() + "/" + file.getPadding();
+		}else{
+			ciphermethod = "AES/" + file.getBlockMode() + "/NoPadding";
+		}
 		Hashing hash = new Hashing();
 		byte[] input = s.getBytes(StandardCharsets.US_ASCII);
 		secret = new Secret("DES", 64);
@@ -180,7 +197,12 @@ public class Cryptography {
 	 * @throws IllegalBlockSizeException
 	 */
 	public String decryptDES(EncodedFile file, Secret decSecret) throws Exception {
-		String ciphermethod = "DES/" + file.getBlockMode() + "/" + file.getPadding();
+		String ciphermethod = "";
+		if (file.getPadding() != null) {
+			ciphermethod = "AES/" + file.getBlockMode() + "/" + file.getPadding();
+		}else{
+			ciphermethod = "AES/" + file.getBlockMode() + "/NoPadding";
+		}
 		Hashing hash = new Hashing();
 		if (file.getHashMode() != null
 				&& hash.validateHash(file.getHashMode(), file.getCipherText(), file.getHashValue())) {
